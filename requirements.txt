@@ -1,4 +1,6 @@
+fastparquet>=2024.2.0
 pandas>=2.2
+pyarrow>=16.0.0
 termcolor
 tqdm
 torch>=2.3.0
