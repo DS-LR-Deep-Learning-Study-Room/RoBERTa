@@ -1,7 +1,9 @@
 from termcolor import colored
+from tqdm import tqdm
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
@@ -22,18 +24,19 @@ class Trainer():
         else:
             self.optimizer = optim.Adam(model.parameters(), lr=1e-4, eps=1e-10)
 
-        self.criterion = nn.CrossEntropyLoss()
+        self.criterion = nn.BCEWithLogitsLoss()
 
-    def train(self, epoch: int) -> float:
+    def train(self, epoch: int, num_classes: int) -> float:
         self.model.train()
 
         running_loss = 0.
         last_loss = 0.
 
-        for index, inputs in enumerate(self.data_loader):
+        pbar = tqdm(self.data_loader, desc="Training", position=1)
+        for index, inputs in enumerate(pbar):
             # input 형식 : [question, label]
-            question = inputs[0].to(self.device)
-            label = inputs[1].to(self.device)
+            question, label = inputs[0].to(self.device), inputs[1].to(self.device)
+            label = F.one_hot(label, num_classes=num_classes).float()
 
             self.optimizer.zero_grad()
 
@@ -41,16 +44,16 @@ class Trainer():
                 question["input_ids"].squeeze(1),
                 attention_mask=question["attention_mask"]
             )
-            print(outputs.logits)
 
-            loss = self.criterion(outputs.logits, label.float())
+            loss = self.criterion(outputs.logits, label)
             loss.backward()
             self.optimizer.step()
 
             running_loss += loss.item()
+            pbar.set_postfix(running_loss = running_loss, loss = last_loss)
             if index % 100 == 99:
                 last_loss = running_loss / 100
-                print(colored(f"epoch {epoch}) batch {index + 1} loss: {last_loss}", "dark_grey"))
                 running_loss = 0.
 
+        pbar.close()
         return last_loss

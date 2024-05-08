@@ -1,13 +1,14 @@
+import argparse
 import logging
 from tqdm import tqdm
 
 import torch
-from transformers import BatchEncoding
 from torch.utils.data import DataLoader
 
 from .dataset.dataset import QuestionDataset
 from .dataset.tokenizer import QuestionTokenizer
 from .const import (
+    MODEL_PATH,
     TRAIN_SET,
     TEST_SET,
     VALID_SET
@@ -18,7 +19,10 @@ from .trainer import Trainer
 
 _LOGGER = logging.getLogger(__name__)
 
-EPOCHS = 5000
+parser = argparse.ArgumentParser()
+parser.add_argument("-T", "--test-only", dest="test", action="store_true", default=False)
+parser.add_argument("-E", "--epochs", dest="epochs", default=5, help="Number of epochs to train")
+parser.add_argument("-B", "--batch-size", dest="batch_size", default=8, help="Batch size of data loader")
 
 device = torch.device(
     "cuda" if torch.cuda.is_available()
@@ -27,13 +31,14 @@ device = torch.device(
 )
 
 if __name__ == "__main__":
+    args = parser.parse_args()
     tokenizer = QuestionTokenizer()
 
-    train_dataset = QuestionDataset(filename=TEST_SET, tokenizer=tokenizer)
+    train_dataset = QuestionDataset(filename=TRAIN_SET, tokenizer=tokenizer)
     valid_dataset = QuestionDataset(filename=VALID_SET, tokenizer=tokenizer)
     test_dataset = QuestionDataset(filename=TEST_SET, tokenizer=tokenizer)
 
-    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=int(args.batch_size), shuffle=True)
     valid_loader = DataLoader(valid_dataset, shuffle=False)
     test_loader = DataLoader(test_dataset, shuffle=False)
 
@@ -42,14 +47,22 @@ if __name__ == "__main__":
         num_labels=num_labels
     ).to(device)
 
-    trainer = Trainer(
-        model=model,
-        data_loader=train_loader,
-        device=device
-    )
-    for epoch in tqdm(range(EPOCHS)):
-        trainer.train(epoch=epoch)
+    if args.test == False:
+        trainer = Trainer(
+            model=model,
+            data_loader=train_loader,
+            device=device
+        )
+        
+        current_epoch = 0
+        pbar = tqdm(range(int(args.epochs)), desc=f"Epoch {current_epoch}", position=0)
+        for epoch in pbar:
+            current_epoch = epoch
+            trainer.train(epoch=epoch, num_classes=num_labels)
 
+        torch.save(model, MODEL_PATH)
+
+    model = torch.load(MODEL_PATH).to(device)
     tester = Tester(
         model=model,
         data_loader=test_loader,

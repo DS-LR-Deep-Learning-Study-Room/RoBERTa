@@ -1,5 +1,6 @@
 ### URL
 PRETRAIN_URL = "FacebookAI/xlm-roberta-base"
+MODEL_PATH = "RoBERTa/model/roberta.pt"
 
 ### Dataset
 TRAIN_SET = "train.parquet"
