@@ -29,7 +29,10 @@ if __name__ == "__main__":
     valid_loader = DataLoader(valid_dataset, shuffle=False)
     test_loader = DataLoader(test_dataset, shuffle=False)
 
-    model = fetch_RoBERTa_model().to(device)
+    num_labels = train_dataset.num_labels()
+    model = fetch_RoBERTa_model(
+        num_labels=num_labels
+    ).to(device)
 
     tester = Tester(
         model=model,
@@ -38,12 +41,3 @@ if __name__ == "__main__":
     )
 
     tester.test()
-
-    # question: BatchEncoding
-    # label: int
-    # question, label = next(iter(train_loader))
-
-    # print(question, label)
-
-    # outputs = model(**question)
-    # print(outputs.logit)

@@ -35,6 +35,13 @@ class QuestionDataset(Dataset):
         self.tokenizer = tokenizer
         self.max_length = max_length
 
+    def num_labels(self) -> int:
+        nunique = self.dataframe["label"].nunique()
+        if type(nunique) == int:
+            return nunique
+        else:
+            return 0
+
     def __len__(self):
         return len(self.dataframe)
 
@@ -42,11 +49,11 @@ class QuestionDataset(Dataset):
         question: str = self.dataframe.iloc[index]["question"]
         label: int = self.dataframe.iloc[index]["label"]
         _LOGGER.info(f"Tokenizing: {question}")
-        # print(
-        #     colored(f"Tokenizing Question >>\n", "dark_grey"),
-        #     colored(f"{question}", "blue"),
-        #     colored(f"[{label}]", "red")
-        # )
+        print(
+            colored(f"Tokenizing Question >>\n", "dark_grey"),
+            colored(f"{question}", "blue"),
+            colored(f"[{label}]", "red")
+        )
 
         # (batch_size, 1, max_length)
         tokenized_question: BatchEncoding = self.tokenizer.tokenize(

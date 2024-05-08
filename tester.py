@@ -22,18 +22,20 @@ class Tester():
         with torch.no_grad():
             for index, inputs in enumerate(self.data_loader):
                 # input 형식 : [question, label]
-                questions = inputs[0].to(self.device)
+                question = inputs[0].to(self.device)
                 label = inputs[1].to(self.device)
+
                 # ?? : General output = (batch_size, max_length)
                 # Currently (batch_size, 1, max_length) obtained.
                 outputs = self.model(
-                    questions["input_ids"].squeeze(1),
-                    attention_mask=questions["attention_mask"]
+                    question["input_ids"].squeeze(1),
+                    attention_mask=question["attention_mask"]
                 )
-                print(outputs.logits)
-                sleep(1)
-                predicted = torch.argmax(outputs.logits, dim=-1)
+
+                props = torch.softmax(outputs.logits, dim=-1)
+                predicted = props.argmax(-1)
                 print(colored(f"predicted: {predicted.item()} label: {label.item()}", "cyan"))
+
                 total_correct += (predicted == label).sum().item()
 
                 if index % 100 == 0:
