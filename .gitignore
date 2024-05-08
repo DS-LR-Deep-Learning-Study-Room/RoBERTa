@@ -206,4 +206,9 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
+### PyTorch
+
+*.pt
+*.pth
+
 # End of https://www.toptal.com/developers/gitignore/api/python,macos
