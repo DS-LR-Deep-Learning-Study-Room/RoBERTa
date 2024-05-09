@@ -13,7 +13,7 @@ from .const import (
     TEST_SET,
     VALID_SET
 )
-from .network.roberta import fetch_RoBERTa_model
+from .network.roberta import fetch_RoBERTa_model, fetch_saved_RoBERTa_model
 from .tester import Tester
 from .trainer import Trainer, HuggingFaceTrainer
 
@@ -76,10 +76,12 @@ if __name__ == "__main__":
         )
         trainer.train()
 
-    model = torch.load(MODEL_PATH).to(device)
-    tester = Tester(
+    model = fetch_saved_RoBERTa_model()
+    tester = HuggingFaceTrainer(
         model=model,
-        data_loader=test_loader,
-        device=device
+        train_data=train_dataset,
+        eval_data=valid_dataset,
+        batch_size=batch_size
     )
-    tester.test()
+    result = tester.evaluate(eval_dataset=valid_dataset)
+    print(result)

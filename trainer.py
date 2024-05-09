@@ -106,3 +106,6 @@ class HuggingFaceTrainer():
         self.trainer.train()
         
         self.trainer.save_model(MODEL_PATH)
+
+    def evaluate(self, eval_dataset: Optional[Dataset] = None) -> dict[str, float]:
+        return self.trainer.evaluate(eval_dataset=eval_dataset)
