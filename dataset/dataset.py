@@ -37,7 +37,7 @@ class QuestionDataset(Dataset):
 
     def num_labels(self) -> int:
         nunique = self.dataframe["label"].nunique()
-        if nunique.isinstance(int):
+        if isinstance(nunique, int):
             return nunique
         else:
             return 0
