@@ -26,7 +26,7 @@ class QuestionDataset(Dataset):
         `tokenizer` : Tokenizer 인스턴스
         `max_length` : Token 최대 길이
         """
-        super(QuestionDataset, self).__init__()
+        super().__init__()
 
         self.dataframe = pd.read_parquet(
             "RoBERTa/dataset/resources/" + filename
@@ -64,7 +64,7 @@ class QuestionDataset(Dataset):
         if self.use_huggingface:
             tokenized_question["input_ids"] = tokenized_question["input_ids"].squeeze(0)
             torch.Tensor([label]).to(torch.int64)
-            tokenized_question["labels"] = label # F.one_hot(index_tensor, num_classes=num_labels)
+            tokenized_question["labels"] = label
             return tokenized_question
         else:
             return (tokenized_question, label)

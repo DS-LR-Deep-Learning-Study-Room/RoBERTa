@@ -1,3 +1,4 @@
+import contextlib
 import os
 from typing import Optional
 
@@ -42,7 +43,8 @@ class Trainer:
         pbar = tqdm(self.data_loader, desc="Training", position=1)
         for index, inputs in enumerate(pbar):
             # input 형식 : [question, label]
-            question, label = inputs["inputs"].to(self.device), inputs["labels"].to(self.device)
+            question = inputs["inputs"].to(self.device)
+            label = inputs["labels"].to(self.device)
             label = F.one_hot(label, num_classes=num_classes).float()
 
             self.optimizer.zero_grad()
@@ -105,10 +107,8 @@ class HuggingFaceTrainer:
     def train(self):
         self.trainer.train()
         
-        try:
+        with contextlib.suppress(OSError):
             os.remove(MODEL_PATH)
-        except OSError:
-            pass
         self.trainer.save_model(MODEL_PATH)
 
     def evaluate(self, eval_dataset: Optional[Dataset] = None) -> dict[str, float]:

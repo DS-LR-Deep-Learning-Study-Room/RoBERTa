@@ -32,10 +32,25 @@ class Tester:
 
                 props = torch.softmax(outputs.logits, dim=-1)
                 predicted = props.argmax(-1)
-                print(colored(f"predicted: {predicted.item()} label: {label.item()}", "cyan"))
+                print(
+                    colored(
+                        f"predicted: {predicted.item()} label: {label.item()}",
+                        "cyan"
+                    )
+                )
 
                 total_correct += (predicted == label).sum().item()
 
                 if index % 100 == 0:
-                    print(colored(f"Accuracy: {total_correct / len(self.data_loader)}", "light_green"))
-        print(colored(f"Final Accuracy: {total_correct / len(self.data_loader) * 100}", "green"))
+                    print(
+                        colored(
+                            f"Accuracy: {total_correct / len(self.data_loader)}",
+                            "light_green"
+                        )
+                    )
+        print(
+            colored(
+                f"Final Accuracy: {total_correct / len(self.data_loader) * 100}",
+                "green"
+            )
+        )
