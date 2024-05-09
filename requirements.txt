@@ -1,3 +1,4 @@
+evaluate>=0.4.2
 fastparquet>=2024.2.0
 pandas>=2.2
 pyarrow>=16.0.0
@@ -5,3 +6,4 @@ termcolor
 tqdm
 torch>=2.3.0
 transformers>=4.40.0
+scikit-learn>=1.4.2
