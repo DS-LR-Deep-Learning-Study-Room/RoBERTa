@@ -210,5 +210,6 @@ pyrightconfig.json
 
 *.pt
 *.pth
+checkpoint**/
 
 # End of https://www.toptal.com/developers/gitignore/api/python,macos
