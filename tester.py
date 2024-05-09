@@ -1,10 +1,10 @@
-from termcolor import colored
-
 import torch
 import torch.nn as nn
+from termcolor import colored
 from torch.utils.data import DataLoader
 
-class Tester():
+
+class Tester:
     def __init__(
         self,
         model: nn.Module,

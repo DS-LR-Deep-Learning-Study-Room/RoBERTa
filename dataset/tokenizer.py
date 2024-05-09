@@ -2,7 +2,8 @@ from transformers import AutoTokenizer, BatchEncoding
 
 from ..const import PRETRAIN_URL
 
-class QuestionTokenizer():
+
+class QuestionTokenizer:
     def __init__(self):
         self.tokenizer = AutoTokenizer.from_pretrained(PRETRAIN_URL)
 

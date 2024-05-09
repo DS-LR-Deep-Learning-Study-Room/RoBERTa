@@ -1,23 +1,14 @@
 import argparse
-import logging
-from tqdm import tqdm
 
 import torch
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
+from .const import MODEL_PATH, TEST_SET, TRAIN_SET, VALID_SET
 from .dataset.dataset import QuestionDataset
 from .dataset.tokenizer import QuestionTokenizer
-from .const import (
-    MODEL_PATH,
-    TRAIN_SET,
-    TEST_SET,
-    VALID_SET
-)
 from .network.roberta import fetch_RoBERTa_model, fetch_saved_RoBERTa_model
-from .tester import Tester
-from .trainer import Trainer, HuggingFaceTrainer
-
-_LOGGER = logging.getLogger(__name__)
+from .trainer import HuggingFaceTrainer, Trainer
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-T", "--test-only", dest="test", action="store_true", default=False)
@@ -52,7 +43,7 @@ if __name__ == "__main__":
         num_labels=num_labels
     ).to(device)
 
-    if args.test == False and args.huggingface == False:
+    if args.test is False and args.huggingface is False:
         trainer = Trainer(
             model=model,
             data_loader=train_loader,
@@ -66,7 +57,7 @@ if __name__ == "__main__":
             trainer.train(epoch=epoch, num_classes=num_labels)
 
         torch.save(model, MODEL_PATH)
-    elif args.test == False and args.huggingface == True:
+    elif args.test is False and args.huggingface is True:
         trainer = HuggingFaceTrainer(
             model=model,
             train_data=train_dataset,

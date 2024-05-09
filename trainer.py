@@ -1,13 +1,20 @@
-from tqdm import tqdm
+import os
 from typing import Optional
 
+import evaluate
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.data import DataLoader
+import transformers.trainer as hf_trainer
+from torch.utils.data import DataLoader, Dataset
+from tqdm import tqdm
+from transformers import TrainingArguments
 
-class Trainer():
+from .const import LOGGING_PATH, MODEL_PATH, TRAINER_PATH
+
+
+class Trainer:
     def __init__(
         self,
         model: nn.Module,
@@ -58,16 +65,7 @@ class Trainer():
         pbar.close()
         return last_loss
 
-import os
-
-import evaluate
-import transformers.trainer as hf_trainer
-from torch.utils.data import Dataset
-from transformers import TrainingArguments
-
-from .const import LOGGING_PATH, MODEL_PATH, TRAINER_PATH
-
-class HuggingFaceTrainer():
+class HuggingFaceTrainer:
     def __init__(
         self,
         model: nn.Module,

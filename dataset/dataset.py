@@ -1,13 +1,9 @@
 import logging
-import numpy as np
+
 import pandas as pd
-
-from transformers import BatchEncoding
-from transformers import DataCollator
-
 import torch
-import torch.nn.functional as F
 from torch.utils.data import Dataset
+from transformers import BatchEncoding
 
 from .tokenizer import QuestionTokenizer
 
@@ -41,7 +37,7 @@ class QuestionDataset(Dataset):
 
     def num_labels(self) -> int:
         nunique = self.dataframe["label"].nunique()
-        if type(nunique) == int:
+        if nunique.isinstance(int):
             return nunique
         else:
             return 0
@@ -52,7 +48,7 @@ class QuestionDataset(Dataset):
     def __getitem__(self, index) -> tuple[BatchEncoding, int] | BatchEncoding:
         question: str = self.dataframe.iloc[index]["question"]
         label: int = self.dataframe.iloc[index]["label"]
-        num_labels: int = self.dataframe["label"].nunique()
+        self.dataframe["label"].nunique()
         _LOGGER.info(f"Tokenizing: {question}")
         # print(
         #     colored(f"Tokenizing Question >>\n", "dark_grey"),
@@ -67,7 +63,7 @@ class QuestionDataset(Dataset):
         
         if self.use_huggingface:
             tokenized_question["input_ids"] = tokenized_question["input_ids"].squeeze(0)
-            index_tensor = torch.Tensor([label]).to(torch.int64)
+            torch.Tensor([label]).to(torch.int64)
             tokenized_question["labels"] = label # F.one_hot(index_tensor, num_classes=num_labels)
             return tokenized_question
         else:
