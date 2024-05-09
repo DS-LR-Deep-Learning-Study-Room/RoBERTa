@@ -1,4 +1,5 @@
 from tqdm import tqdm
+from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -12,7 +13,7 @@ class Trainer():
         model: nn.Module,
         data_loader: DataLoader,
         device: torch.device,
-        optimizer: optim.Optimizer | None = None
+        optimizer: Optional[optim.Optimizer] = None
     ):
         self.model = model
         self.data_loader = data_loader
@@ -68,11 +69,11 @@ class HuggingFaceTrainer():
     def __init__(
         self,
         model: nn.Module,
-        train_data: Dataset,
-        eval_data: Dataset,
+        train_data: Optional[Dataset] = None,
+        eval_data: Optional[Dataset] = None,
         epochs: float = 3,
         batch_size: int = 8,
-        label_names: list[str] | None = None
+        label_names: Optional[list[str]] = None
     ):
         training_args = TrainingArguments(
             output_dir=TRAINER_PATH,
@@ -96,7 +97,7 @@ class HuggingFaceTrainer():
         
         self.metric = evaluate.load("accuracy")
     
-    def compute_metrics(self, eval_pred) -> dict | None:
+    def compute_metrics(self, eval_pred) -> Optional[dict]:
         logits, labels = eval_pred
         predictions = logits.argmax(-1)
         return self.metric.compute(predictions=predictions, references=labels)
