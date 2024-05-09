@@ -58,6 +58,8 @@ class Trainer():
         pbar.close()
         return last_loss
 
+import os
+
 import evaluate
 import transformers.trainer as hf_trainer
 from torch.utils.data import Dataset
@@ -105,6 +107,10 @@ class HuggingFaceTrainer():
     def train(self):
         self.trainer.train()
         
+        try:
+            os.remove(MODEL_PATH)
+        except OSError:
+            pass
         self.trainer.save_model(MODEL_PATH)
 
     def evaluate(self, eval_dataset: Optional[Dataset] = None) -> dict[str, float]:
