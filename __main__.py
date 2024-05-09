@@ -15,7 +15,7 @@ from .const import (
 )
 from .network.roberta import fetch_RoBERTa_model
 from .tester import Tester
-from .trainer import Trainer
+from .trainer import Trainer, HuggingFaceTrainer
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,6 +23,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-T", "--test-only", dest="test", action="store_true", default=False)
 parser.add_argument("-E", "--epochs", dest="epochs", default=5, help="Number of epochs to train")
 parser.add_argument("-B", "--batch-size", dest="batch_size", default=8, help="Batch size of data loader")
+parser.add_argument("-F", "--use-huggingface", dest="huggingface", action="store_true", default=True, help="Use HuggingFace's Trainer class instead of pure PyTorch")
 
 device = torch.device(
     "cuda" if torch.cuda.is_available()
@@ -34,11 +35,15 @@ if __name__ == "__main__":
     args = parser.parse_args()
     tokenizer = QuestionTokenizer()
 
-    train_dataset = QuestionDataset(filename=TRAIN_SET, tokenizer=tokenizer)
-    valid_dataset = QuestionDataset(filename=VALID_SET, tokenizer=tokenizer)
-    test_dataset = QuestionDataset(filename=TEST_SET, tokenizer=tokenizer)
+    use_huggingface = args.huggingface
+    batch_size = int(args.batch_size)
+    epochs = int(args.epochs)
+    
+    train_dataset = QuestionDataset(filename=TRAIN_SET, tokenizer=tokenizer, use_huggingface=use_huggingface)
+    valid_dataset = QuestionDataset(filename=VALID_SET, tokenizer=tokenizer, use_huggingface=use_huggingface)
+    test_dataset = QuestionDataset(filename=TEST_SET, tokenizer=tokenizer, use_huggingface=use_huggingface)
 
-    train_loader = DataLoader(train_dataset, batch_size=int(args.batch_size), shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, shuffle=False)
     test_loader = DataLoader(test_dataset, shuffle=False)
 
@@ -47,7 +52,7 @@ if __name__ == "__main__":
         num_labels=num_labels
     ).to(device)
 
-    if args.test == False:
+    if args.test == False and args.huggingface == False:
         trainer = Trainer(
             model=model,
             data_loader=train_loader,
@@ -55,12 +60,21 @@ if __name__ == "__main__":
         )
         
         current_epoch = 0
-        pbar = tqdm(range(int(args.epochs)), desc=f"Epoch {current_epoch}", position=0)
+        pbar = tqdm(range(epochs), desc=f"Epoch {current_epoch}", position=0)
         for epoch in pbar:
             current_epoch = epoch
             trainer.train(epoch=epoch, num_classes=num_labels)
 
         torch.save(model, MODEL_PATH)
+    elif args.test == False and args.huggingface == True:
+        trainer = HuggingFaceTrainer(
+            model=model,
+            train_data=train_dataset,
+            eval_data=test_dataset,
+            epochs=float(epochs),
+            batch_size=batch_size
+        )
+        trainer.train()
 
     model = torch.load(MODEL_PATH).to(device)
     tester = Tester(

@@ -1,5 +1,4 @@
 from termcolor import colored
-from time import sleep
 
 import torch
 import torch.nn as nn
@@ -21,14 +20,13 @@ class Tester():
         total_correct = 0
         with torch.no_grad():
             for index, inputs in enumerate(self.data_loader):
+                print(inputs)
                 # input 형식 : [question, label]
-                question = inputs[0].to(self.device)
-                label = inputs[1].to(self.device)
+                question = inputs["input_ids"].to(self.device)
+                label = inputs["labels"].to(self.device)
 
-                # ?? : General output = (batch_size, max_length)
-                # Currently (batch_size, 1, max_length) obtained.
                 outputs = self.model(
-                    question["input_ids"].squeeze(1),
+                    question["input_ids"],
                     attention_mask=question["attention_mask"]
                 )
 
@@ -40,4 +38,4 @@ class Tester():
 
                 if index % 100 == 0:
                     print(colored(f"Accuracy: {total_correct / len(self.data_loader)}", "light_green"))
-        print(colored(f"Final Accuracy: {total_correct / len(self.data_loader)}", "green"))
+        print(colored(f"Final Accuracy: {total_correct / len(self.data_loader) * 100}", "green"))

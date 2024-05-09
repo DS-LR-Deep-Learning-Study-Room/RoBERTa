@@ -15,6 +15,7 @@ class QuestionTokenizer():
             sequence,
             padding="max_length",
             max_length=max_length,
+            truncation=True,
             return_tensors="pt"
         )
         return tokenized_question

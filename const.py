@@ -1,6 +1,10 @@
+PROJECT_NAME = "RoBERTa"
+
 ### URL
 PRETRAIN_URL = "FacebookAI/xlm-roberta-base"
-MODEL_PATH = "RoBERTa/model/roberta.pt"
+MODEL_PATH = PROJECT_NAME + "/model/roberta.pt"
+LOGGING_PATH = PROJECT_NAME + "/logs"
+TRAINER_PATH = PROJECT_NAME + "/trainer"
 
 ### Dataset
 TRAIN_SET = "train.parquet"
