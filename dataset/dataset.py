@@ -9,17 +9,19 @@ from .tokenizer import QuestionTokenizer
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class QuestionDataset(Dataset):
     """
     Questions Parquet 파일로부터 Dataset을 생성합니다.
     `def __init__(self, filename: str)`
     """
+
     def __init__(
         self,
         filename: str,
         tokenizer: QuestionTokenizer,
         max_length: int = 512,
-        use_huggingface: bool = True
+        use_huggingface: bool = True,
     ):
         """
         `filename` : Parquet 파일 이름
@@ -28,15 +30,14 @@ class QuestionDataset(Dataset):
         """
         super().__init__()
 
-        self.dataframe = pd.read_parquet(
-            "RoBERTa/dataset/resources/" + filename
-        )
+        self.dataframe = pd.read_parquet("RoBERTa/dataset/resources/" + filename)
         self.tokenizer = tokenizer
         self.max_length = max_length
         self.use_huggingface = use_huggingface
 
     def num_labels(self) -> int:
         nunique = self.dataframe["label"].nunique()
+        # Pydantic: 이런 식으로 (타입 체크해서 return)
         if isinstance(nunique, int):
             return nunique
         else:
@@ -46,6 +47,7 @@ class QuestionDataset(Dataset):
         return len(self.dataframe)
 
     def __getitem__(self, index) -> tuple[BatchEncoding, int] | BatchEncoding:
+        """TODO: Pydantic (validator) <- Input 데이터 타입/형식 체크"""
         question: str = self.dataframe.iloc[index]["question"]
         label: int = self.dataframe.iloc[index]["label"]
         self.dataframe["label"].nunique()
@@ -57,10 +59,9 @@ class QuestionDataset(Dataset):
         # )
 
         tokenized_question: BatchEncoding = self.tokenizer.tokenize(
-            question,
-            max_length=self.max_length
+            question, max_length=self.max_length
         )
-        
+
         if self.use_huggingface:
             tokenized_question["input_ids"] = tokenized_question["input_ids"].squeeze(0)
             torch.Tensor([label]).to(torch.int64)

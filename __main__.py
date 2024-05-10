@@ -12,9 +12,7 @@ from .network.roberta import fetch_RoBERTa_model, fetch_saved_RoBERTa_model
 from .trainer import HuggingFaceTrainer, Trainer
 
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    "-T", "--test-only", dest="test", action="store_true", default=False
-)
+parser.add_argument("-T", "--eval", dest="eval", action="store_true", default=False)
 parser.add_argument(
     "-E", "--epochs", dest="epochs", default=5, help="Number of epochs to train"
 )
@@ -49,9 +47,11 @@ if __name__ == "__main__":
     train_dataset = QuestionDataset(
         filename=TRAIN_SET, tokenizer=tokenizer, use_huggingface=use_huggingface
     )
+    # Training 도중에 사용하는 평가 데이터 셋
     valid_dataset = QuestionDataset(
         filename=VALID_SET, tokenizer=tokenizer, use_huggingface=use_huggingface
     )
+    # Fine-Tuning 후에 쓰이는 평가 데이터 셋
     test_dataset = QuestionDataset(
         filename=TEST_SET, tokenizer=tokenizer, use_huggingface=use_huggingface
     )
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     num_labels = train_dataset.num_labels()
     model = fetch_RoBERTa_model(num_labels=num_labels).to(device)
 
-    if args.test is False and args.huggingface is False:
+    if args.eval is False and args.huggingface is False:
         trainer = Trainer(model=model, data_loader=train_loader, device=device)
 
         current_epoch = 0
@@ -73,17 +73,18 @@ if __name__ == "__main__":
             trainer.train(epoch=epoch, num_classes=num_labels)
 
         torch.save(model, MODEL_PATH)
-    elif args.test is False and args.huggingface is True:
+    elif args.eval is False and args.huggingface is True:
         trainer = HuggingFaceTrainer(
             model=model,
             train_data=train_dataset,
-            eval_data=test_dataset,
+            eval_data=valid_dataset,
             epochs=float(epochs),
             batch_size=batch_size,
         )
         trainer.train()
 
+    # Evaluate
     model = fetch_saved_RoBERTa_model(num_labels=num_labels)
     tester = HuggingFaceTrainer(model=model, batch_size=batch_size)
-    result = tester.evaluate(eval_dataset=valid_dataset)
+    result = tester.evaluate(eval_dataset=test_dataset)
     print(colored(result, "green"))
